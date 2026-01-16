@@ -1,9 +1,9 @@
-
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Lock, Mail, User } from "lucide-react";
+import { motion } from "framer-motion";
+import { Lock, Mail, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ModeToggle } from "@/components/mode-toggle";
+// import { ModeToggle } from "@/components/mode-toggle"; // Uncomment if you have this component
+import { useSignIn } from "@clerk/clerk-react"; // <--- IMPORT CLERK HOOK
 
 // --- Mock UI Components ---
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => {
@@ -41,6 +41,23 @@ const GoogleIcon = () => (
 export default function AuthPage() {
     const [isSignIn, setIsSignIn] = useState(true);
     const navigate = useNavigate();
+    
+    // --- CLERK INTEGRATION START ---
+    const { signIn, isLoaded } = useSignIn();
+
+    const handleGoogleLogin = async () => {
+        if (!isLoaded) return;
+        try {
+            await signIn.authenticateWithRedirect({
+                strategy: "oauth_google",
+                redirectUrl: "/dashboard", 
+                redirectUrlComplete: "/dashboard",
+            });
+        } catch (err) {
+            console.error("Login failed", err);
+        }
+    };
+    // --- CLERK INTEGRATION END ---
 
     return (
         <div className="min-h-screen w-full bg-background text-foreground flex flex-col items-center justify-center p-4 transition-colors duration-300">
@@ -50,7 +67,7 @@ export default function AuthPage() {
             </button>
 
             <div className="absolute top-8 right-8">
-                <ModeToggle />
+                {/* <ModeToggle /> */} 
             </div>
 
             <motion.div
@@ -60,17 +77,9 @@ export default function AuthPage() {
             >
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
-                    <div className="h-16 w-auto relative">
-                        <img
-                            src="/logos/logo-black.svg"
-                            className="h-16 w-auto dark:hidden block"
-                            alt="Baithak"
-                        />
-                        <img
-                            src="/logos/logo-white.svg"
-                            className="h-16 w-auto hidden dark:block"
-                            alt="Baithak"
-                        />
+                    <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center text-black font-bold text-2xl">
+                        {/* Placeholder Logo if image missing */}
+                        B
                     </div>
                 </div>
 
@@ -87,9 +96,10 @@ export default function AuthPage() {
                 {/* Card */}
                 <div className="bg-card/50 border border-border p-8 rounded-2xl shadow-xl backdrop-blur-sm">
 
-                    {/* Social Login */}
+                    {/* Social Login - NOW FUNCTIONAL */}
                     <div className="space-y-4">
                         <Button
+                            onClick={handleGoogleLogin} // <--- Added Handler
                             variant="outline"
                             className="w-full py-6 bg-card border-input text-card-foreground hover:bg-accent hover:text-accent-foreground gap-3 rounded-xl transition-all"
                         >
@@ -107,10 +117,10 @@ export default function AuthPage() {
                         </div>
                     </div>
 
-                    {/* Form */}
+                    {/* Form (Visual Only for now) */}
                     <form className="space-y-4" onSubmit={(e) => {
                         e.preventDefault();
-                        navigate('/profile');
+                        // Optional: Add email logic later if needed
                     }}>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground ml-1">Email address</label>
@@ -148,13 +158,12 @@ export default function AuthPage() {
                             </div>
                         )}
 
-                        <Button className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all mt-4">
-                            Continue
+                        <Button className="w-full h-11 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 transition-all mt-4">
+                            Continue (Use Google Above)
                         </Button>
                     </form>
                 </div>
 
-                {/* Footer Toggle */}
                 <p className="text-center text-sm text-muted-foreground">
                     {isSignIn ? "Don't have an account? " : "Already have an account? "}
                     <button
@@ -165,7 +174,6 @@ export default function AuthPage() {
                     </button>
                 </p>
 
-                {/* Secure Badge */}
                 <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
                     <Lock size={12} />
                     <span>Secured by Clerk</span>
