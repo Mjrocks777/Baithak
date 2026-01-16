@@ -1,0 +1,368 @@
+# Collaborative Study Sync - Antigravity IDE Context
+
+## Project Overview
+24-hour hackathon project building an integrated study platform that combines resource management, social learning, and real-time collaboration.
+
+## Tech Stack
+- **Frontend**: React 18 + Vite + TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Backend**: Convex (real-time database & backend)
+- **Auth**: Clerk (OAuth + session management)
+- **Rich Text**: Tiptap
+- **Whiteboard**: react-canvas-draw
+- **Runtime**: Bun.js
+- **Deployment**: Vercel
+
+## Architecture Principles
+
+### 1. Convex-First Backend
+- All data queries and mutations go through Convex
+- Use Convex subscriptions for real-time features (chat, live updates)
+- No REST API needed - Convex provides type-safe functions
+- File storage handled by Convex File Storage
+
+### 2. Component Philosophy
+- Small, focused components (max 150 lines)
+- Use shadcn/ui primitives for consistency
+- Extract business logic to custom hooks
+- Props should be explicitly typed with TypeScript interfaces
+
+### 3. State Management
+- Convex queries for server state (auto-caching, reactive)
+- React Context for global UI state (theme, modals)
+- Local useState for component-specific state
+- NO Redux/Zustand needed
+
+### 4. Routing Structure
+```
+/ - Landing page with scroll video
+/auth/signin - Sign in
+/auth/signup - Sign up
+/auth/profile-setup - Multi-step profile wizard
+/dashboard - User dashboard with enrolled subjects
+/subjects - Browse all subjects
+/subjects/:id - Subject detail with modules
+/subjects/:id/modules/:moduleId - Module with resources
+/rooms/:roomId - Study room with chat + whiteboard
+/profile - User profile
+```
+
+## Key Data Models
+
+### Users
+```typescript
+{
+  _id: Id<"users">,
+  clerkId: string,
+  name: string,
+  email: string,
+  university: string,
+  stream: string,
+  course: string,
+  avatar: string,
+  lastActive: number,
+  createdAt: number
+}
+```
+
+### Subjects
+```typescript
+{
+  _id: Id<"subjects">,
+  name: string,
+  courseId: string,
+  description: string,
+  enrolledCount: number,
+  moduleCount: number
+}
+```
+
+### Resources
+```typescript
+{
+  _id: Id<"resources">,
+  moduleId: Id<"modules">,
+  uploaderId: Id<"users">,
+  title: string,
+  description: string,
+  type: "pdf" | "image" | "link",
+  fileUrl: string,
+  tags: string[],
+  visibility: "public" | "private",
+  upvotes: number,
+  uploadedAt: number
+}
+```
+
+### Study Rooms
+```typescript
+{
+  _id: Id<"studyRooms">,
+  subjectId: Id<"subjects">,
+  name: string,
+  goal: string,
+  capacity: number, // 5 or 6
+  adminId: Id<"users">,
+  memberCount: number,
+  createdAt: number
+}
+```
+
+## Coding Standards
+
+### TypeScript
+- Use strict mode
+- Define interfaces for all props and data structures
+- Avoid `any` - use `unknown` if type is unclear
+- Use enums for fixed sets of values
+
+### React Patterns
+```tsx
+// Good: Typed props, early returns, extracted logic
+interface ResourceCardProps {
+  resource: Resource;
+  onUpvote: (id: Id<"resources">) => void;
+}
+
+export function ResourceCard({ resource, onUpvote }: ResourceCardProps) {
+  const { user } = useAuth();
+  
+  if (!resource) return null;
+  
+  const handleUpvote = () => {
+    onUpvote(resource._id);
+  };
+  
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{resource.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {/* content */}
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+### Convex Patterns
+```typescript
+// queries.ts - Read operations
+export const getSubjects = query({
+  args: { courseId: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    let query = ctx.db.query("subjects");
+    
+    if (args.courseId) {
+      query = query.filter((q) => 
+        q.eq(q.field("courseId"), args.courseId)
+      );
+    }
+    
+    return await query.collect();
+  },
+});
+
+// mutations.ts - Write operations
+export const createSubject = mutation({
+  args: {
+    name: v.string(),
+    courseId: v.string(),
+    description: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+    
+    return await ctx.db.insert("subjects", {
+      ...args,
+      enrolledCount: 0,
+      moduleCount: 0,
+    });
+  },
+});
+```
+
+### File Upload Pattern
+```typescript
+// 1. Generate upload URL (mutation)
+const generateUploadUrl = useMutation(api.files.generateUploadUrl);
+
+// 2. Upload file to Convex
+const postUrl = await generateUploadUrl();
+const result = await fetch(postUrl, {
+  method: "POST",
+  headers: { "Content-Type": file.type },
+  body: file,
+});
+const { storageId } = await result.json();
+
+// 3. Save metadata with storageId
+const saveResource = useMutation(api.resources.create);
+await saveResource({
+  title: "My Notes",
+  fileStorageId: storageId,
+  type: "pdf",
+});
+```
+
+## Styling Guidelines
+
+### Tailwind Conventions
+- Use semantic color tokens: `bg-primary`, `text-muted-foreground`
+- Responsive: mobile-first, use `md:`, `lg:` prefixes
+- Spacing: consistent scale (p-4, gap-6, space-y-4)
+- Dark mode: use `dark:` prefix (automatic with shadcn/ui)
+
+### Component Sizing
+- Cards: `rounded-lg border shadow-sm`
+- Buttons: Use shadcn/ui Button variants (default, outline, ghost, destructive)
+- Inputs: Use shadcn/ui Input, Select, Textarea
+- Spacing between sections: `space-y-8` or `gap-8`
+
+## Performance Optimization
+
+### Code Splitting
+```tsx
+// Lazy load heavy components
+const WhiteboardLite = lazy(() => import("./WhiteboardLite"));
+
+<Suspense fallback={<LoadingSpinner />}>
+  <WhiteboardLite />
+</Suspense>
+```
+
+### Convex Optimization
+```typescript
+// Limit query results
+.order("desc")
+.take(50); // Only fetch last 50 messages
+
+// Use indexes for faster queries (define in schema.ts)
+.withIndex("by_subject", (q) => q.eq("subjectId", subjectId))
+```
+
+### Image Optimization
+- Use WebP format for video frames
+- Lazy load images: `loading="lazy"`
+- Use thumbnail versions for lists
+
+## Error Handling
+
+### Convex Errors
+```typescript
+try {
+  await createResource(args);
+} catch (error) {
+  if (error.message.includes("Unauthenticated")) {
+    toast.error("Please sign in to upload resources");
+  } else {
+    toast.error("Failed to upload. Please try again.");
+  }
+}
+```
+
+### File Upload Errors
+```typescript
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
+
+if (file.size > MAX_FILE_SIZE) {
+  toast.error("File too large. Maximum size is 25MB");
+  return;
+}
+
+if (!["application/pdf", "image/jpeg", "image/png"].includes(file.type)) {
+  toast.error("Invalid file type. Only PDF and images allowed");
+  return;
+}
+```
+
+## Testing Strategy (If Time Permits)
+
+### Manual Testing Checklist
+- [ ] Sign up with email works
+- [ ] Google OAuth works
+- [ ] Profile setup completes
+- [ ] Subject enrollment works
+- [ ] File upload succeeds
+- [ ] Search returns results
+- [ ] Chat messages appear in real-time
+- [ ] Whiteboard saves/loads correctly
+
+### Edge Cases to Handle
+- Empty states (no subjects, no resources, no messages)
+- Loading states (skeleton screens)
+- Error states (failed uploads, network errors)
+- Permission checks (can't edit others' resources)
+
+## Security Checklist
+
+- [x] Authentication required for all mutations
+- [x] User can only edit their own content
+- [x] File size limits enforced (25MB PDF, 10MB images)
+- [x] Input sanitization for user content (Tiptap handles this)
+- [x] MIME type validation on uploads
+- [ ] Rate limiting on mutations (if Convex starts throttling)
+
+## Deployment Checklist
+
+### Environment Variables (.env.local)
+```bash
+VITE_CONVEX_URL=https://your-deployment.convex.cloud
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_...
+```
+
+### Pre-Deploy Verification
+1. All features work in local dev
+2. Build succeeds: `bun run build`
+3. No TypeScript errors: `bun run type-check`
+4. Environment variables set in Vercel
+5. Convex deployment synced: `bunx convex deploy`
+6. Clerk production keys configured
+
+### Deploy Steps
+1. Push to GitHub main branch
+2. Vercel auto-deploys from GitHub
+3. Verify Convex functions deployed
+4. Test auth flow in production
+5. Test file upload in production
+
+## Common Pitfalls to Avoid
+
+1. **Don't fetch inside loops** - Use Convex joins or batch queries
+2. **Don't use localStorage** - Breaks SSR, use Convex for persistence
+3. **Don't skip loading states** - Always show skeletons during queries
+4. **Don't hardcode URLs** - Use environment variables
+5. **Don't commit .env files** - Add to .gitignore
+6. **Don't use socket.io** - Convex subscriptions handle real-time
+7. **Don't over-engineer** - Simple solutions first, optimize later
+
+## Helpful Commands
+
+```bash
+# Development
+bun run dev              # Start Vite dev server
+bunx convex dev          # Start Convex backend
+
+# Build
+bun run build           # Production build
+bun run preview         # Preview production build
+
+# Convex
+bunx convex deploy       # Deploy Convex functions
+bunx convex dashboard    # Open Convex dashboard
+
+# Git
+git add .
+git commit -m "feat: add feature name"
+git push origin feature-branch
+```
+
+## Resources
+
+- [Convex Docs](https://docs.convex.dev)
+- [Clerk Docs](https://clerk.com/docs)
+- [shadcn/ui](https://ui.shadcn.com)
+- [Tailwind CSS](https://tailwindcss.com)
+- [React Router](https://reactrouter.com)

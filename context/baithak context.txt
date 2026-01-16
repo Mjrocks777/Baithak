@@ -1,0 +1,237 @@
+# Project Context: Baithak (Peer Learning Platform)
+
+## Role for LLM
+This file serves as the primary context for the project "Baithak."  
+Use the phases, data models, and business logic defined here to generate code, plan features, and debug.
+
+---
+
+## 1. Project Overview
+
+Baithak is a centralized platform bridging the gap between solitary resource gathering and active peer learning.  
+It unifies course material, community discussion, and real-time collaboration.
+
+### Development Strategy
+"Hackathon Strategy" (Lock & Move)
+
+### Constraint
+Phase $N$ features must be stable before starting Phase $N+1$.
+
+### Tech Stack (Inferred/Suggested)
+- Frontend: React / Next.js
+- Backend/DB: Convex (Explicitly mentioned for Actions/Subscriptions)
+- Auth: Clerk or Custom Auth (Email/Pass + Google)
+- AI: Google Gemini API (gemini-1.5-flash)
+- Styling: Tailwind CSS
+
+---
+
+## 2. Implementation Phases
+
+---
+
+## Phase 1: The Foundation & "Study Vault" (Priority: High)
+
+### Goal
+Replace Google Drive. Build User Base + Content Library.
+
+---
+
+### 2.1 Core Infrastructure
+
+#### Auth
+Email/Password & Google Login.
+
+#### User Profile
+Fields:
+- Name
+- University
+- Avatar
+- Stream (e.g., Engineering)
+- Course (e.g., CS Year 2)
+
+#### Hierarchy System
+Structure: Course -> Subject -> Module  
+
+Crowdsourcing:  
+If a Subject is empty, enrolled students can create Modules.
+
+Validation:  
+Prevent duplicate module names via fuzzy matching or list checking.
+
+---
+
+### 2.2 Content Management (The Vault)
+
+Uploads:
+- PDF
+- Images
+- Links
+
+Metadata:
+- Title
+- Description
+- Tags
+
+Visibility:
+- Private (Personal)
+- Public (Subject-wide)
+
+Discovery:
+- Search (by Tag/Module)
+- Preview (Thumbnail)
+- Upvote System
+
+---
+
+### 2.3 AI Layer (Gemini Integration)
+
+Trigger:  
+On file upload.
+
+Mechanism:  
+Convex Action -> Send text to gemini-1.5-flash.
+
+Prompt:  
+"Summarize this educational content into 5 key bullet points."
+
+UI:  
+Display summary in a "Quick Look" accordion on the note card.
+
+---
+
+## Phase 2: Interaction (Social Layer)
+
+### Goal
+Replace WhatsApp Groups. Build Community + Accountability.
+
+---
+
+### 3.1 Contextual Threads
+
+Location:
+- Embedded inside Modules
+- Attached to Notes
+
+Structure:
+- Reddit-style (Post -> Tier 1 Reply -> Tier 2 Nested)
+
+Features:
+- Rich text
+- Image support
+- Upvote/Downvote logic
+
+---
+
+### 3.2 Study Rooms (Cohorts)
+
+Logic:
+- Temporary/Permanent subgroups
+
+Constraints:
+- Max capacity (5-6 members)
+
+Metadata:
+- Room Name
+- Room Goal (e.g., "Mid-term Prep")
+
+---
+
+### 3.3 Task Management & Focus
+
+Shared Checklist:
+- Syncs across room members
+
+"Laggard" View:
+- Visual progress bar comparing members (e.g., User A: 3/10 vs User B: 8/10)
+
+Pomodoro:
+- Timer (25m/45m)
+- Status broadcasting (Focusing/Break)
+- Activity Labeling (e.g., "Solving PYQs")
+
+---
+
+### 3.4 Notifications
+
+Triggers:
+- Replies
+- Room Invites
+- Focus Session Starts
+- Member Milestones
+
+---
+
+## Phase 3: Live Workspace (Bonus Layer)
+
+### Goal
+Synchronous Collaboration (High Complexity).
+
+---
+
+### 4.1 Real-Time Chat
+
+Tech:
+- Convex subscriptions
+
+Scope:
+- Study Room exclusive
+
+Features:
+- Typing indicators
+- Online/Offline status
+
+---
+
+### 4.2 Collaborative Whiteboard
+
+Features:
+- Multi-user drawing
+- Cursors
+- Basic shapes
+
+Requirement:
+- Low latency (<200ms)
+
+---
+
+### 4.3 Analytics & SRS (Spaced Repetition)
+
+Visuals:
+- Donut chart (Syllabus coverage)
+- Activity Heatmap
+
+The "Coach":
+- Tracks completion dates
+- Suggests revision on Day 1, 3, 7, 30
+
+---
+
+## 3. Data Schema Guidelines (Conceptual)
+
+When generating schemas (e.g., schema.ts in Convex), follow this structure:
+
+```ts
+users: id, name, email, university, stream, currentCourseId, avatarUrl.
+subjects: id, name, courseId.
+modules: id, subjectId, title, createdBy (userId).
+resources: id, moduleId, type (pdf/link), url, storageId, visibility (public/private), aiSummary, upvotes.
+threads: id, resourceId (optional), moduleId, authorId, content, parentId (for nesting).
+studyRooms: id, subjectId, name, goal, members (array of userIds), maxCapacity.
+roomTasks: id, roomId, description, completedBy (array of userIds).
+pomodoroSessions: id, userId, roomId, status, startTime, activityLabel.
+
+
+4. Technical Constraints & Rules
+
+Phase Enforcement:
+
+Do not implement Phase 3 features (Chat/Whiteboard) until Phase 1 & 2 are complete.
+
+AI Usage:
+
+Use gemini-1.5-flash specifically for cost/speed efficiency in summarization.
+
+Real-time:
+
+Leverage Convex's reactive nature for the "Laggard View" and "Pomodoro Status" rather than polling.

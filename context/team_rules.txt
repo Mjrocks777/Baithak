@@ -1,0 +1,506 @@
+# Team Collaboration Rules - Collaborative Study Sync
+
+## 🚨 CRITICAL: Merge Conflict Prevention
+
+### Branch Strategy
+```bash
+# Main branch: ALWAYS deployable
+main
+
+# Feature branches: One per team member, one per major feature
+feature/auth-and-profile       # Team Member 1
+feature/vault-and-resources    # Team Member 2
+feature/social-and-rooms       # Team Member 3
+feature/live-workspace         # Team Member 4
+feature/landing-page           # Team Member 5 (non-coder)
+```
+
+### Branch Naming Convention
+- `feature/phase-name` for major features
+- `fix/bug-description` for bug fixes
+- `chore/task-name` for non-feature tasks
+
+### Git Workflow
+
+#### 1. Starting Work
+```bash
+# ALWAYS pull latest main first
+git checkout main
+git pull origin main
+
+# Create your feature branch
+git checkout -b feature/your-phase-name
+
+# Start coding
+```
+
+#### 2. Regular Commits
+```bash
+# Commit frequently (every 30-60 minutes)
+git add .
+git commit -m "feat: add subject enrollment UI"
+
+# Push to your branch
+git push origin feature/your-phase-name
+```
+
+#### 3. Before Merging to Main
+```bash
+# Pull latest main
+git checkout main
+git pull origin main
+
+# Go back to your branch
+git checkout feature/your-phase-name
+
+# Rebase on main (this prevents merge conflicts)
+git rebase main
+
+# If conflicts occur, resolve them
+# Then continue: git rebase --continue
+
+# Push your updated branch (force push after rebase)
+git push origin feature/your-phase-name --force
+```
+
+#### 4. Creating Pull Request
+- Open PR on GitHub
+- Title: "Phase 1: Auth & Profile Setup"
+- Description: List completed features
+- Request review from team lead
+- Wait for approval before merging
+
+---
+
+## 📋 File Ownership Matrix
+
+To prevent conflicts, each team member "owns" specific files. Only edit files you own unless coordinating with the owner.
+
+### Team Member 1: Auth & Profile
+**Owns:**
+```
+src/components/auth/
+  - SignInForm.tsx
+  - SignUpForm.tsx
+  - ProfileSetup.tsx
+src/pages/
+  - ProfilePage.tsx
+convex/
+  - users.ts
+src/hooks/
+  - useAuth.ts
+```
+
+**Can Edit (Shared):**
+- `src/App.tsx` (routing only)
+- `convex/schema.ts` (coordinate changes)
+
+### Team Member 2: Vault & Resources
+**Owns:**
+```
+src/components/vault/
+  - ResourceCard.tsx
+  - UploadModal.tsx
+  - SearchBar.tsx
+src/pages/
+  - SubjectExplorer.tsx
+  - ModulePage.tsx
+convex/
+  - subjects.ts
+  - modules.ts
+  - resources.ts
+```
+
+**Can Edit (Shared):**
+- `src/App.tsx` (routing only)
+- `convex/schema.ts` (coordinate changes)
+
+### Team Member 3: Social & Rooms
+**Owns:**
+```
+src/components/social/
+  - ThreadCard.tsx
+  - ThreadCreator.tsx
+  - ReplyList.tsx
+src/components/rooms/
+  - RoomCard.tsx
+  - TaskChecklist.tsx
+  - LaggardView.tsx
+  - PomodoroTimer.tsx
+src/pages/
+  - StudyRoomPage.tsx
+convex/
+  - threads.ts
+  - studyRooms.ts
+  - tasks.ts
+```
+
+**Can Edit (Shared):**
+- `src/App.tsx` (routing only)
+- `convex/schema.ts` (coordinate changes)
+
+### Team Member 4: Live Workspace
+**Owns:**
+```
+src/components/workspace/
+  - ChatBox.tsx
+  - WhiteboardLite.tsx
+convex/
+  - messages.ts
+  - whiteboards.ts
+```
+
+**Can Edit (Shared):**
+- `src/pages/StudyRoomPage.tsx` (coordinate with Team Member 3)
+- `convex/schema.ts` (coordinate changes)
+
+### Team Member 5: Landing Page
+**Owns:**
+```
+src/components/landing/
+  - ScrollVideo.tsx
+  - Hero.tsx
+src/pages/
+  - LandingPage.tsx
+src/hooks/
+  - useScrollVideo.ts
+public/landing-frames/
+  - (all frame images)
+```
+
+**Can Edit (Shared):**
+- `src/App.tsx` (routing only)
+
+---
+
+## 🔒 Shared Files - Coordinate Before Editing
+
+### Critical Shared Files
+1. **`convex/schema.ts`** - Database schema
+   - Announce changes in team chat BEFORE editing
+   - Example: "Adding `lastActive` field to users table"
+   - Wait for acknowledgment before pushing
+
+2. **`src/App.tsx`** - Main routing
+   - Only add routes for your features
+   - Don't modify others' routes
+   - Keep alphabetically sorted
+
+3. **`src/index.css`** - Global styles
+   - Don't add component-specific styles here
+   - Only for true global styles (resets, fonts)
+
+4. **`package.json`** - Dependencies
+   - Announce before adding new packages
+   - Example: "Installing react-canvas-draw for whiteboard"
+
+---
+
+## 🎯 Component Communication Rules
+
+### Props vs Context
+```tsx
+// ✅ GOOD: Use props for parent-child communication
+<ResourceCard resource={resource} onUpvote={handleUpvote} />
+
+// ❌ BAD: Don't use Context for component-specific data
+const { currentResource } = useGlobalContext(); // NO!
+
+// ✅ GOOD: Use Context only for truly global state
+const { user, theme } = useAuth(); // OK - needed everywhere
+```
+
+### Convex Queries - No Duplication
+```tsx
+// ✅ GOOD: Query in parent, pass as props
+function ModulePage() {
+  const resources = useQuery(api.resources.getByModule, { moduleId });
+  return <ResourceList resources={resources} />;
+}
+
+// ❌ BAD: Same query in multiple child components (wasteful)
+function ResourceCard() {
+  const resources = useQuery(api.resources.getByModule, { moduleId }); // NO!
+}
+```
+
+---
+
+## 🛠️ Vibe Coding Best Practices
+
+### 1. AI-Assisted Coding Rules
+
+#### When Using AI (Antigravity, Cursor, Copilot):
+- **Always review generated code** - Don't blindly accept
+- **Verify imports** - Make sure packages exist in package.json
+- **Check TypeScript types** - Fix any `any` types
+- **Test immediately** - Run code after each AI generation
+- **Keep context focused** - Share only relevant files
+
+#### AI Prompts Template:
+```
+Context: Building [feature] for study platform
+Tech: React + Convex + Clerk
+File: [filename]
+Task: [specific task]
+Constraints:
+- Must use shadcn/ui components
+- Follow TypeScript strict mode
+- Keep under 150 lines
+Code:
+```
+
+### 2. Code Style Consistency
+
+#### Use Prettier (Auto-format on save)
+```json
+// .prettierrc
+{
+  "semi": true,
+  "trailingComma": "es5",
+  "singleQuote": false,
+  "printWidth": 80,
+  "tabWidth": 2
+}
+```
+
+#### TypeScript Patterns
+```tsx
+// ✅ GOOD: Explicit types, interfaces
+interface ResourceCardProps {
+  resource: Resource;
+  onUpvote: (id: Id<"resources">) => void;
+}
+
+// ❌ BAD: Implicit any
+function ResourceCard({ resource, onUpvote }) { // NO!
+```
+
+### 3. Component Size Limits
+- **Max 150 lines** per component
+- If longer, split into sub-components
+- Extract hooks for complex logic
+
+```tsx
+// ✅ GOOD: Extracted logic to hook
+function ResourceCard({ resource }: Props) {
+  const { handleUpvote, isUpvoted } = useResourceActions(resource._id);
+  
+  return <Card>...</Card>;
+}
+
+// ❌ BAD: All logic in component (200+ lines)
+function ResourceCard({ resource }: Props) {
+  const [isUpvoted, setIsUpvoted] = useState(false);
+  const upvote = useMutation(api.resources.upvote);
+  // ... 150 more lines
+}
+```
+
+---
+
+## 🚦 Testing & Quality Gates
+
+### Before Pushing Code:
+1. **Run TypeScript check**: `bun run type-check`
+2. **Build succeeds**: `bun run build`
+3. **No console errors** in browser
+4. **Feature works** as expected
+5. **Doesn't break others' features**
+
+### Commit Message Format
+```bash
+# Feature
+git commit -m "feat: add resource upload modal"
+
+# Bug fix
+git commit -m "fix: resolve upvote button click issue"
+
+# Style/refactor
+git commit -m "refactor: extract resource card logic to hook"
+
+# Documentation
+git commit -m "docs: update API usage in comments"
+```
+
+---
+
+## 🔥 Emergency Conflict Resolution
+
+### If You Get Merge Conflicts:
+
+#### Small Conflicts (< 10 lines)
+```bash
+# 1. See conflicted files
+git status
+
+# 2. Open file, resolve markers
+# <<<<<<< HEAD
+# Your changes
+# =======
+# Their changes
+# >>>>>>> main
+
+# 3. Choose correct version, remove markers
+
+# 4. Stage resolved files
+git add .
+
+# 5. Continue merge/rebase
+git rebase --continue
+```
+
+#### Large Conflicts (> 10 lines)
+```bash
+# 1. Abort the merge
+git rebase --abort
+
+# 2. Ask teammate to review together
+# Use screen share or pair programming
+
+# 3. Create backup branch
+git checkout -b feature/your-phase-backup
+
+# 4. Coordinate merge with team lead
+```
+
+---
+
+## 📞 Communication Protocol
+
+### Real-Time Coordination
+- **Use team chat** (WhatsApp/Discord) for quick questions
+- **Screen share** for debugging together
+- **Voice call** if stuck for > 15 minutes
+
+### Status Updates (Every 2 Hours)
+Post in team chat:
+```
+[Your Name] - [Time]
+✅ Completed: [feature]
+🔨 Working on: [current task]
+🚧 Blocked by: [issue or dependency]
+⏱️ ETA: [expected completion time]
+```
+
+Example:
+```
+[Rohan] - 2:00 PM
+✅ Completed: User authentication with Clerk
+🔨 Working on: Profile setup wizard
+🚧 Blocked by: Need users table schema from Aarav
+⏱️ ETA: 4:00 PM
+```
+
+### Dependency Management
+If your work depends on someone else:
+1. **Tag them** in chat: "@Priya need subjects table schema"
+2. **Create placeholder** if urgent:
+```tsx
+// TODO: Replace with actual Convex query when schema ready
+const mockSubjects = [{ id: "1", name: "Data Structures" }];
+```
+3. **Notify when unblocked**: "Got schema from Aarav, updating now"
+
+---
+
+## 🎯 Phase Handoffs
+
+### Completing Your Phase:
+1. **Test thoroughly** - All features work
+2. **Document issues** - Create issues on GitHub for known bugs
+3. **Update README** - Add your feature to docs
+4. **Demo to team** - Show features work
+5. **Merge to main** - After approval
+
+### Starting Next Phase:
+1. **Pull latest main** - `git pull origin main`
+2. **Review previous phase** - Understand what was built
+3. **Check dependencies** - Verify APIs/schemas you need exist
+4. **Ask questions** - Don't assume, clarify first
+
+---
+
+## 🛡️ Backup Strategy
+
+### Regular Backups
+```bash
+# Every 2 hours, tag your progress
+git tag phase-1-checkpoint-2pm
+git push origin phase-1-checkpoint-2pm
+
+# If disaster strikes, revert to tag
+git checkout phase-1-checkpoint-2pm
+```
+
+### Branch Protection
+- **Never force push to main**: `git push --force origin main` ❌
+- **Always use PRs**: Direct commits to main not allowed
+- **Keep feature branches**: Don't delete until project complete
+
+---
+
+## 📊 Progress Tracking
+
+### GitHub Project Board Columns
+1. **Backlog** - All features from PRD
+2. **In Progress** - Currently working on
+3. **Review** - PR created, awaiting approval
+4. **Done** - Merged to main
+5. **Blocked** - Waiting on dependency
+
+### Move Cards:
+- Assign yourself when starting
+- Add comment on blockers
+- Tag reviewers when ready
+
+---
+
+## 🚀 Demo Day Preparation
+
+### 2 Hours Before Demo:
+1. **Freeze code** - No new commits
+2. **Full team test** - Everyone tests all features
+3. **Prepare fallbacks** - Screenshots if live demo fails
+4. **Rehearse demo** - Practice 2-3 times
+5. **Deploy to production** - Final deployment
+
+### Demo Roles:
+- **Presenter** - Talks through demo
+- **Navigator** - Controls screen
+- **Backup** - Has local version running
+- **Timekeeper** - Watches 5-minute limit
+- **Note-taker** - Records judge feedback
+
+---
+
+## ✅ Final Checklist
+
+Before submission:
+- [ ] All features from assigned phase work
+- [ ] No TypeScript errors
+- [ ] Build succeeds
+- [ ] Deployed to Vercel
+- [ ] All team members tested
+- [ ] Demo script ready
+- [ ] Fallback plan exists
+- [ ] GitHub repository clean (no secrets in commits)
+- [ ] README updated with setup instructions
+
+---
+
+## 🤝 Team Agreements
+
+We agree to:
+1. ✅ Communicate early and often
+2. ✅ Ask for help when stuck > 15 minutes
+3. ✅ Review others' PRs within 30 minutes
+4. ✅ Not block others' progress
+5. ✅ Sleep the mandatory 5 hours (1 AM - 6 AM)
+6. ✅ Support each other through challenges
+7. ✅ Celebrate small wins together
+8. ✅ Ship something great, together! 🚀
+
+---
+
+**Remember**: A working product with 70% features is better than a broken product with 100% features. Prioritize stability over completeness!
