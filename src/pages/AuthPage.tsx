@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Lock, Mail, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ModeToggle } from "@/components/mode-toggle";
 
 // --- Mock UI Components ---
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => {
@@ -42,11 +43,15 @@ export default function AuthPage() {
     const navigate = useNavigate();
 
     return (
-        <div className="min-h-screen w-full bg-black text-white flex flex-col items-center justify-center p-4">
+        <div className="min-h-screen w-full bg-background text-foreground flex flex-col items-center justify-center p-4 transition-colors duration-300">
             {/* Back Button */}
-            <button onClick={() => navigate('/')} className="absolute top-8 left-8 text-neutral-400 hover:text-white transition-colors">
+            <button onClick={() => navigate('/')} className="absolute top-8 left-8 text-muted-foreground hover:text-foreground transition-colors">
                 ← Back
             </button>
+
+            <div className="absolute top-8 right-8">
+                <ModeToggle />
+            </div>
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -55,11 +60,18 @@ export default function AuthPage() {
             >
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
-                    <img
-                        src="/logos/logo-black.svg"
-                        alt="Baithak"
-                        className="h-16 w-auto"
-                    />
+                    <div className="h-16 w-auto relative">
+                        <img
+                            src="/logos/logo-black.svg"
+                            className="h-16 w-auto dark:hidden block"
+                            alt="Baithak"
+                        />
+                        <img
+                            src="/logos/logo-white.svg"
+                            className="h-16 w-auto hidden dark:block"
+                            alt="Baithak"
+                        />
+                    </div>
                 </div>
 
                 {/* Header */}
@@ -67,19 +79,19 @@ export default function AuthPage() {
                     <h1 className="text-3xl font-bold tracking-tight">
                         {isSignIn ? "Sign in" : "Create an account"}
                     </h1>
-                    <p className="text-neutral-400 text-sm">
+                    <p className="text-muted-foreground text-sm">
                         {isSignIn ? "Welcome back! Please sign in to continue" : "Enter your details to get started"}
                     </p>
                 </div>
 
                 {/* Card */}
-                <div className="bg-neutral-900/50 border border-neutral-800 p-8 rounded-2xl shadow-xl backdrop-blur-sm">
+                <div className="bg-card/50 border border-border p-8 rounded-2xl shadow-xl backdrop-blur-sm">
 
                     {/* Social Login */}
                     <div className="space-y-4">
                         <Button
                             variant="outline"
-                            className="w-full py-6 bg-neutral-900 border-neutral-700 text-neutral-200 hover:bg-neutral-800 hover:text-white gap-3 rounded-xl transition-all"
+                            className="w-full py-6 bg-card border-input text-card-foreground hover:bg-accent hover:text-accent-foreground gap-3 rounded-xl transition-all"
                         >
                             <GoogleIcon />
                             Continue with Google
@@ -88,58 +100,73 @@ export default function AuthPage() {
 
                     <div className="relative my-8">
                         <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t border-neutral-800" />
+                            <span className="w-full border-t border-border" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-neutral-900/50 px-2 text-neutral-500">Or continue with</span>
+                            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
                         </div>
                     </div>
 
                     {/* Form */}
-                    <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+                    <form className="space-y-4" onSubmit={(e) => {
+                        e.preventDefault();
+                        navigate('/profile');
+                    }}>
                         <div className="space-y-2">
-                            <label className="text-sm font-medium text-neutral-300 ml-1">Email address</label>
+                            <label className="text-sm font-medium text-foreground ml-1">Email address</label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-3 h-4 w-4 text-neutral-500" />
+                                <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder="Enter your email address"
-                                    className="pl-10 bg-neutral-950/50 border-neutral-800 text-white placeholder:text-neutral-600 h-11 rounded-xl focus:border-neutral-600 focus:bg-neutral-950 transition-all"
+                                    className="pl-10 bg-background/50 border-input text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus:border-ring focus:bg-background transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-foreground ml-1">Password</label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    type="password"
+                                    placeholder="Enter your password"
+                                    className="pl-10 bg-background/50 border-input text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus:border-ring focus:bg-background transition-all"
                                 />
                             </div>
                         </div>
 
                         {!isSignIn && (
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-neutral-300 ml-1">Full Name</label>
+                                <label className="text-sm font-medium text-foreground ml-1">Full Name</label>
                                 <div className="relative">
-                                    <User className="absolute left-3 top-3 h-4 w-4 text-neutral-500" />
+                                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Enter your full name"
-                                        className="pl-10 bg-neutral-950/50 border-neutral-800 text-white placeholder:text-neutral-600 h-11 rounded-xl focus:border-neutral-600 focus:bg-neutral-950 transition-all"
+                                        className="pl-10 bg-background/50 border-input text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus:border-ring focus:bg-background transition-all"
                                     />
                                 </div>
                             </div>
                         )}
 
-                        <Button className="w-full h-11 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 transition-all mt-4">
+                        <Button className="w-full h-11 rounded-xl bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-all mt-4">
                             Continue
                         </Button>
                     </form>
                 </div>
 
                 {/* Footer Toggle */}
-                <p className="text-center text-sm text-neutral-400">
+                <p className="text-center text-sm text-muted-foreground">
                     {isSignIn ? "Don't have an account? " : "Already have an account? "}
                     <button
                         onClick={() => setIsSignIn(!isSignIn)}
-                        className="font-medium text-white hover:underline underline-offset-4"
+                        className="font-medium text-foreground hover:underline underline-offset-4"
                     >
                         {isSignIn ? "Sign up" : "Sign in"}
                     </button>
                 </p>
 
                 {/* Secure Badge */}
-                <div className="flex items-center justify-center gap-2 text-neutral-600 text-sm">
+                <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
                     <Lock size={12} />
                     <span>Secured by Clerk</span>
                 </div>

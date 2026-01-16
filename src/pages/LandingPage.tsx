@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { ModeToggle } from "@/components/mode-toggle";
 
 // --- Utility Functions ---
 function cn(...inputs: ClassValue[]) {
@@ -85,30 +86,61 @@ const StickyCanvas = ({ scrollYProgress }: { scrollYProgress: any }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Preload images (smart loading - load first few immediately, then rest)
+    // Preload images (smart loading - load first few immediately, then rest)
     useEffect(() => {
-        let loadedCount = 0;
-        const imgArray: HTMLImageElement[] = [];
+        let isMounted = true;
 
-        // Create image objects for all frames
-        for (let i = 1; i <= TOTAL_FRAMES; i++) {
-            const img = new Image();
-            img.src = `${SEQUENCE_PATH}${i.toString().padStart(3, "0")}.jpg`;
-            imgArray.push(img);
+        const loadImages = async () => {
+            if (!isMounted) return;
 
-            // Simple loading text logic
-            img.onload = () => {
-                loadedCount++;
-                if (loadedCount === TOTAL_FRAMES) setIsLoaded(true);
+            const imgArray: HTMLImageElement[] = new Array(TOTAL_FRAMES).fill(null);
+            const BATCH_SIZE = 10;
+
+            // Helper to load a single batch
+            const loadBatch = async (startIndex: number) => {
+                if (!isMounted) return;
+                const endIndex = Math.min(startIndex + BATCH_SIZE, TOTAL_FRAMES + 1);
+
+                const promises = [];
+                for (let i = startIndex; i < endIndex; i++) {
+                    promises.push(new Promise<void>((resolve) => {
+                        const img = new Image();
+                        img.src = `${SEQUENCE_PATH}${i.toString().padStart(3, "0")}.jpg`;
+                        img.onload = () => {
+                            if (isMounted) {
+                                imgArray[i - 1] = img;
+                                // Force update significantly less often or just once at the end?
+                                // For smooth scrubbing we need them in state. 
+                                // Let's update state only when we actually have a valid image to show or periodically
+                            }
+                            resolve();
+                        };
+                        img.onerror = () => resolve(); // validation
+                    }));
+                }
+
+                await Promise.all(promises);
+
+                if (isMounted) {
+                    // Update state with currently loaded images
+                    setImages([...imgArray]);
+                    setIsLoaded(true); // Show content as soon as first batch is ready
+
+                    if (endIndex <= TOTAL_FRAMES) {
+                        // Schedule next batch with a clear yielding of main thread
+                        setTimeout(() => loadBatch(endIndex), 50);
+                    }
+                }
             };
-        }
-        setImages(imgArray);
 
-        // Quick start: mark loaded after a short delay/progressive checks or just start drawing
-        // For this demo, we'll start drawing immediately but valid images only appear when loaded
-        setIsLoaded(true);
+            // Start loading
+            await loadBatch(1);
+        };
+
+        loadImages();
 
         return () => {
-            // Cleanup if needed
+            isMounted = false;
         };
     }, []);
 
@@ -512,7 +544,9 @@ export default function LandingPage() {
                             alt="Baithak"
                             className="h-12 w-auto"
                         />
-                        {/* Removed Right side buttons as per request */}
+                        <div className="relative z-50">
+                            <ModeToggle />
+                        </div>
                     </header>
 
                     {/* 4. DOM Animation Layers Over Canvas */}

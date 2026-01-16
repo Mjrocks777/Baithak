@@ -1,26 +1,26 @@
 <svg width="500" height="150" viewBox="0 0 500 150" fill="none" xmlns="http://www.w3.org/2000/svg">
     <g transform="translate(10, 10)">
-        <circle cx="65" cy="65" r="55" stroke="#FFFFFF" stroke-width="3" fill="none"/>
-        <path d="M65 10 L103 27 M103 27 L120 65 M120 65 L103 103 M103 103 L65 120 M65 120 L27 103 M27 103 L10 65 M10 65 L27 27 M27 27 L65 10" stroke="#FFFFFF" stroke-width="1.5"/>
-        <circle cx="65" cy="10" r="5" fill="#FFFFFF"/>
-        <circle cx="103" cy="27" r="5" fill="#FFFFFF"/>
-        <circle cx="120" cy="65" r="5" fill="#FFFFFF"/>
-        <circle cx="103" cy="103" r="5" fill="#FFFFFF"/>
-        <circle cx="65" cy="120" r="5" fill="#FFFFFF"/>
-        <circle cx="27" cy="103" r="5" fill="#FFFFFF"/>
-        <circle cx="10" cy="65" r="5" fill="#FFFFFF"/>
-        <circle cx="27" cy="27" r="5" fill="#FFFFFF"/>
+        <circle cx="65" cy="65" r="55" stroke="#1a1a1a" stroke-width="3" fill="none"/>
+        <path d="M65 10 L103 27 M103 27 L120 65 M120 65 L103 103 M103 103 L65 120 M65 120 L27 103 M27 103 L10 65 M10 65 L27 27 M27 27 L65 10" stroke="#1a1a1a" stroke-width="1.5"/>
+        <circle cx="65" cy="10" r="5" fill="#1a1a1a"/>
+        <circle cx="103" cy="27" r="5" fill="#1a1a1a"/>
+        <circle cx="120" cy="65" r="5" fill="#1a1a1a"/>
+        <circle cx="103" cy="103" r="5" fill="#1a1a1a"/>
+        <circle cx="65" cy="120" r="5" fill="#1a1a1a"/>
+        <circle cx="27" cy="103" r="5" fill="#1a1a1a"/>
+        <circle cx="10" cy="65" r="5" fill="#1a1a1a"/>
+        <circle cx="27" cy="27" r="5" fill="#1a1a1a"/>
         <g transform="translate(35, 38) scale(0.6)">
-            <path d="M50 85 C30 90 10 85 0 85 V 10 C 10 10 30 15 50 20" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            <path d="M50 85 C70 90 90 85 100 85 V 10 C 90 10 70 15 50 20" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            <path d="M50 20 V 85" stroke="#FFFFFF" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M50 85 C30 90 10 85 0 85 V 10 C 10 10 30 15 50 20" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M50 85 C70 90 90 85 100 85 V 10 C 90 10 70 15 50 20" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <path d="M50 20 V 85" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
         </g>
     </g>
     <g transform="translate(150, 85)">
-        <text font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="72" fill="#FFFFFF" letter-spacing="-1">
+        <text font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-weight="700" font-size="72" fill="#1a1a1a" letter-spacing="-1">
             Baitha<tspan fill="#F59E0B">K</tspan>
         </text>
-        <text x="5" y="35" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="18" fill="#FFFFFF" letter-spacing="1.5" text-transform="uppercase">
+        <text x="5" y="35" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif" font-weight="400" font-size="18" fill="#1a1a1a" letter-spacing="1.5" text-transform="uppercase">
             Collaborative Learning Hub
         </text>
     </g>
