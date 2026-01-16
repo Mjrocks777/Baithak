@@ -14,12 +14,10 @@ import {
     Bell,
     Image as ImageIcon,
     MoreHorizontal,
-    Play,
-    CheckCircle2,
+    ArrowRight,
+    ListTodo,
     Users,
     MousePointer2,
-    ArrowRight,
-    BookOpen,
 } from "lucide-react";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -247,10 +245,10 @@ const HeroSection = ({ scrollYProgress }: { scrollYProgress: any }) => {
                     transition={{ duration: 0.8 }}
                     className="mb-8"
                 >
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/50 drop-shadow-sm">
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter text-slate-900 drop-shadow-sm">
                         Distracted?
                     </h1>
-                    <p className="mt-4 text-2xl md:text-3xl font-light text-muted-foreground">
+                    <p className="mt-4 text-2xl md:text-3xl font-light text-slate-700">
                         Study Together, Not Alone.
                     </p>
                 </motion.div>
@@ -298,9 +296,9 @@ const TimelineSection = ({ scrollYProgress }: { scrollYProgress: any }) => {
     const drawProgress = useTransform(scrollYProgress, [0.35, 0.65], [0, 1]);
 
     const steps = [
-        { title: "Lecture Watched", icon: Play, desc: "Sync with friends in real-time" },
-        { title: "Notes Compiled", icon: BookOpen, desc: "Collaborative markdown editor" },
-        { title: "Doubts Resolved", icon: CheckCircle2, desc: "Instant peer support" },
+        { title: "StudyRooms", icon: Users, desc: "Sync with friends in real-time" },
+        { title: "Shared To-Do List", icon: ListTodo, desc: "Track progress together" },
+        { title: "Discussion Threads", icon: MessageCircle, desc: "Doubts solved by peers" },
     ];
 
     return (
@@ -309,7 +307,7 @@ const TimelineSection = ({ scrollYProgress }: { scrollYProgress: any }) => {
             className="absolute top-[35%] left-0 flex h-auto w-full flex-col items-center justify-center p-8 pointer-events-none"
         >
             <div className="max-w-4xl w-full">
-                <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-12 text-center drop-shadow-sm">
+                <h2 className="text-4xl font-bold text-slate-800 mb-12 text-center drop-shadow-sm">
                     The Journey to Clarity
                 </h2>
 
@@ -414,10 +412,10 @@ const WorkspaceSection = ({ scrollYProgress }: { scrollYProgress: any }) => {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 1, delay: 0.5 }}
-                        className="text-center z-20 bg-background/80 p-6 rounded-xl border backdrop-blur"
+                        className="text-center z-20 bg-background/80 p-6 rounded-xl border backdrop-blur flex flex-col items-center"
                     >
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-2">Enter Baithak.</h2>
-                        <p className="text-lg md:text-xl text-muted-foreground">Where ideas converge.</p>
+                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-2 text-slate-900">Enter</h2>
+                        <img src="/logos/logo-black.svg" alt="Baithak" className="h-16 md:h-20 w-auto mt-2" />
                     </motion.div>
                 </div>
 
@@ -521,6 +519,8 @@ export default function LandingPage() {
         target: containerRef,
         offset: ["start start", "end end"],
     });
+
+
 
     return (
         <div
