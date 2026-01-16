@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Mail, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-// import { ModeToggle } from "@/components/mode-toggle"; // Uncomment if you have this component
+import { ModeToggle } from "@/components/mode-toggle"; // Uncomment if you have this component
 import { useSignIn } from "@clerk/clerk-react"; // <--- IMPORT CLERK HOOK
 
 // --- Mock UI Components ---
@@ -41,7 +41,7 @@ const GoogleIcon = () => (
 export default function AuthPage() {
     const [isSignIn, setIsSignIn] = useState(true);
     const navigate = useNavigate();
-    
+
     // --- CLERK INTEGRATION START ---
     const { signIn, isLoaded } = useSignIn();
 
@@ -50,7 +50,7 @@ export default function AuthPage() {
         try {
             await signIn.authenticateWithRedirect({
                 strategy: "oauth_google",
-                redirectUrl: "/dashboard", 
+                redirectUrl: "/dashboard",
                 redirectUrlComplete: "/dashboard",
             });
         } catch (err) {
@@ -67,7 +67,7 @@ export default function AuthPage() {
             </button>
 
             <div className="absolute top-8 right-8">
-                {/* <ModeToggle /> */} 
+                <ModeToggle />
             </div>
 
             <motion.div
@@ -76,11 +76,20 @@ export default function AuthPage() {
                 className="w-full max-w-md space-y-8"
             >
                 {/* Logo */}
+                {/* Logo */}
                 <div className="flex justify-center mb-8">
-                    <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center text-black font-bold text-2xl">
-                        {/* Placeholder Logo if image missing */}
-                        B
-                    </div>
+                    {/* Light Mode Logo */}
+                    <img
+                        src="/logos/logo-black.svg"
+                        alt="Baithak Logo"
+                        className="h-16 w-auto dark:hidden block"
+                    />
+                    {/* Dark Mode Logo */}
+                    <img
+                        src="/logos/logo-white.svg"
+                        alt="Baithak Logo"
+                        className="h-16 w-auto hidden dark:block"
+                    />
                 </div>
 
                 {/* Header */}
@@ -158,7 +167,7 @@ export default function AuthPage() {
                             </div>
                         )}
 
-                        <Button className="w-full h-11 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 transition-all mt-4">
+                        <Button className="w-full h-11 rounded-xl font-semibold transition-all mt-4">
                             Continue (Use Google Above)
                         </Button>
                     </form>

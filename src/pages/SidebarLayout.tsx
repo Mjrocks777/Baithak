@@ -2,17 +2,25 @@
 import { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
 import { ModeToggle } from "@/components/mode-toggle";
-import { LayoutDashboard, UserCog, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, UserCog, Settings, LogOut, FolderOpen } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export function SidebarLayout() {
+    console.log("Rendering SidebarLayout");
     const links = [
         {
             label: "Dashboard",
             href: "/dashboard",
             icon: (
                 <LayoutDashboard className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+            ),
+        },
+        {
+            label: "The Vault",
+            href: "/vault",
+            icon: (
+                <FolderOpen className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
         {
@@ -73,7 +81,7 @@ export function SidebarLayout() {
             {/* Main Content Area */}
             <div className="flex flex-1 overflow-y-auto bg-white dark:bg-neutral-900 relative">
                 <div className="absolute top-4 right-4 z-50">
-                    <ModeToggle />
+                    {/* <ModeToggle /> */}
                 </div>
                 <div className="p-2 md:p-10 rounded-tl-2xl border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-black/50 flex flex-col gap-2 flex-1 w-full h-full">
                     <Outlet />
