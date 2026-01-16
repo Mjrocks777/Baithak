@@ -288,14 +288,14 @@ const ChaosCard = ({ data, scrollYProgress, idx }: { data: any, scrollYProgress:
 }
 
 
-// Section 2: Mid - The Knowledge Timeline (30% - 60%)
+// Section 2: Mid - The Knowledge Timeline (30% - 65%)
 const TimelineSection = ({ scrollYProgress }: { scrollYProgress: any }) => {
-    // Visible range approximately 35% to 65% of total scroll
-    const opacity = useTransform(scrollYProgress, [0.25, 0.35, 0.55, 0.65], [0, 1, 1, 0]);
+    // Visible range extended: 35% to 70% (was 55%)
+    const opacity = useTransform(scrollYProgress, [0.25, 0.35, 0.70, 0.80], [0, 1, 1, 0]);
     const scale = useTransform(scrollYProgress, [0.25, 0.45], [0.8, 1]);
 
     // Timeline Drawing
-    const drawProgress = useTransform(scrollYProgress, [0.35, 0.55], [0, 1]);
+    const drawProgress = useTransform(scrollYProgress, [0.35, 0.65], [0, 1]);
 
     const steps = [
         { title: "Lecture Watched", icon: Play, desc: "Sync with friends in real-time" },
@@ -309,7 +309,7 @@ const TimelineSection = ({ scrollYProgress }: { scrollYProgress: any }) => {
             className="absolute top-[35%] left-0 flex h-auto w-full flex-col items-center justify-center p-8 pointer-events-none"
         >
             <div className="max-w-4xl w-full">
-                <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-12 text-center">
+                <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 mb-12 text-center drop-shadow-sm">
                     The Journey to Clarity
                 </h2>
 
@@ -363,23 +363,24 @@ const TimelineNode = ({ step, index, rangeStart, scrollYProgress }: any) => {
     return (
         <motion.div
             style={{ scale, opacity, y }}
-            className="flex flex-col items-center text-center z-10 bg-background/50 backdrop-blur-sm p-6 rounded-2xl border border-border/50 shadow-sm md:w-1/3"
+            className="flex flex-col items-center text-center z-10 bg-background/95 backdrop-blur-md p-6 rounded-2xl border border-border/50 shadow-xl md:w-1/3 mx-2"
         >
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary shadow-inner ring-4 ring-background">
                 <step.icon size={32} />
             </div>
-            <h3 className="text-xl font-bold">{step.title}</h3>
+            <h3 className="text-xl font-bold text-foreground">{step.title}</h3>
             <p className="text-muted-foreground text-sm mt-2 font-medium">{step.desc}</p>
         </motion.div>
     )
 }
 
 
-// Section 3: Bottom - Live Workspace (60% - 100%)
+// Section 3: Bottom - Live Workspace (70% - 100%)
 const WorkspaceSection = ({ scrollYProgress }: { scrollYProgress: any }) => {
-    const opacity = useTransform(scrollYProgress, [0.65, 0.75], [0, 1]);
-    const y = useTransform(scrollYProgress, [0.65, 0.85], ["50%", "0%"]);
-    const scale = useTransform(scrollYProgress, [0.65, 0.85], [0.9, 1]);
+    // Delayed start to accommodate longer timeline (starts at 0.75 instead of 0.65)
+    const opacity = useTransform(scrollYProgress, [0.75, 0.85], [0, 1]);
+    const y = useTransform(scrollYProgress, [0.75, 0.95], ["50%", "0%"]);
+    const scale = useTransform(scrollYProgress, [0.75, 0.95], [0.9, 1]);
 
     const navigate = useNavigate();
 
@@ -540,7 +541,7 @@ export default function LandingPage() {
                     {/* 3. Global Navbar Mock */}
                     <header className="absolute top-0 w-full p-6 flex justify-between items-center z-50">
                         <img
-                            src="/logos/logo-white.svg"
+                            src="/logos/logo-black.svg"
                             alt="Baithak"
                             className="h-12 w-auto"
                         />

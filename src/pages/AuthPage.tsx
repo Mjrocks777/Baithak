@@ -19,7 +19,7 @@ Input.displayName = "Input"
 
 const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'default' | 'outline' | 'ghost' }>(({ className, variant = 'default', ...props }, ref) => {
     const variants = {
-        default: "bg-white text-black hover:bg-white/90",
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
         outline: "border border-input bg-transparent hover:bg-accent hover:text-accent-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground",
     }
