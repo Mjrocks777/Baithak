@@ -13,7 +13,7 @@ export function SidebarLayout() {
 
     const handleLogout = async () => {
         await signOut();
-        navigate('/auth');
+        navigate('/auth', { replace: true });
     };
 
     const links = [

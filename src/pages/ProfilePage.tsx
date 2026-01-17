@@ -66,7 +66,7 @@ const Select = ({ options, placeholder, value, onChange }: {
 
 export default function ProfilePage() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, loading: authLoading } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [isFetching, setIsFetching] = useState(true);
     const [formData, setFormData] = useState({
@@ -74,12 +74,18 @@ export default function ProfilePage() {
         university: "",
         stream: "",
         age: "",
+        gender: "",
     });
 
     // Fetch existing profile data on mount
     useEffect(() => {
         async function fetchProfile() {
-            if (!user) return;
+            if (authLoading) return; // Wait for auth to load
+
+            if (!user) {
+                setIsFetching(false);
+                return;
+            }
 
             try {
                 const { data, error } = await supabase
@@ -97,16 +103,25 @@ export default function ProfilePage() {
                         name: data.name || '',
                         university: data.university || '',
                         stream: data.stream || '',
-                        age: '', // Age not stored in schema
+                        age: data.age?.toString() || '',
+                        gender: data.gender || '',
                     });
+                } else {
+                    // Pre-fill name from auth if no profile exists
+                    setFormData(prev => ({
+                        ...prev,
+                        name: user.user_metadata?.full_name || user.email?.split('@')[0] || ''
+                    }));
                 }
+            } catch (err) {
+                console.error("Unexpected error fetching profile:", err);
             } finally {
                 setIsFetching(false);
             }
         }
 
         fetchProfile();
-    }, [user]);
+    }, [user, authLoading]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -123,6 +138,8 @@ export default function ProfilePage() {
                     name: formData.name,
                     university: formData.university || null,
                     stream: formData.stream || null,
+                    age: formData.age ? parseInt(formData.age) : null,
+                    gender: formData.gender || null,
                 });
 
             if (error) {
@@ -208,7 +225,7 @@ export default function ProfilePage() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Stream Field */}
                             <div className="space-y-2">
                                 <Label className="text-foreground">Stream</Label>
@@ -217,6 +234,17 @@ export default function ProfilePage() {
                                     options={["Engineering", "Medical", "Arts", "Commerce", "Law", "Management", "Other"]}
                                     value={formData.stream}
                                     onChange={(e) => setFormData({ ...formData, stream: e.target.value })}
+                                />
+                            </div>
+
+                            {/* Gender Field */}
+                            <div className="space-y-2">
+                                <Label className="text-foreground">Gender</Label>
+                                <Select
+                                    placeholder="Select Gender"
+                                    options={["Male", "Female", "Other", "Prefer not to say"]}
+                                    value={formData.gender}
+                                    onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                                 />
                             </div>
 
@@ -252,7 +280,7 @@ export default function ProfilePage() {
 
                     </form>
                 </div>
-            </motion.div>
-        </div>
+            </motion.div >
+        </div >
     );
 }

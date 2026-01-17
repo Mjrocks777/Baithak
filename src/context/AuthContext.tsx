@@ -38,6 +38,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setSession(session);
             setUser(session?.user ?? null);
             setLoading(false);
+        }).catch((err) => {
+            console.error("Error getting session:", err);
+            setLoading(false);
         });
 
         // Listen for auth changes
@@ -106,6 +109,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     async function signOut() {
         await supabase.auth.signOut();
+        setUser(null);
+        setSession(null);
+
+        // Clear Supabase auth tokens from localStorage
+        for (const key in localStorage) {
+            if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+                localStorage.removeItem(key);
+            }
+        }
     }
 
     const value = {

@@ -1,5 +1,11 @@
 
-export function TimeSpentWidget() {
+interface TimeSpentWidgetProps {
+    subjectName?: string;
+}
+
+export function TimeSpentWidget({ subjectName }: TimeSpentWidgetProps) {
+    const displaySubject = subjectName || "Operating Systems";
+
     return (
         <div className="h-full flex flex-col justify-between p-6 rounded-3xl bg-white dark:bg-black border border-neutral-200 dark:border-white/10 relative overflow-hidden group">
             {/* Removed gradient background as per "cleaner" request implication, though not explicitly asked for this widget, it fits the theme */}
@@ -17,7 +23,7 @@ export function TimeSpentWidget() {
                     </span>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                    studying <span className="text-foreground font-semibold">Operating Systems</span>
+                    studying <span className="text-foreground font-semibold">{displaySubject}</span>
                 </p>
             </div>
 
