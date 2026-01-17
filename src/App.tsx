@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import TheVault from "./pages/TheVault";
 import { ThemeProvider } from "./components/theme-provider";
 import ErrorBoundary from "./components/error-boundary";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import "./index.css";
 
 function App() {
@@ -20,8 +21,12 @@ function App() {
           {/* Auth Page */}
           <Route path="/auth" element={<AuthPage />} errorElement={<ErrorBoundary />} />
 
-          {/* Main App Routes with Sidebar */}
-          <Route element={<SidebarLayout />} errorElement={<ErrorBoundary />}>
+          {/* Protected Routes with Sidebar - requires authentication */}
+          <Route element={
+            <ProtectedRoute>
+              <SidebarLayout />
+            </ProtectedRoute>
+          } errorElement={<ErrorBoundary />}>
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/vault" element={<TheVault />} />

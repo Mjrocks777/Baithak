@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { User, Camera } from "lucide-react";
+import { User, Camera, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import { supabase } from "@/lib/supabase";
 
 // --- Mock Shadcn Components & Utilities ---
-// (Reusing similar utilities for consistency)
 const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(" ");
 
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
@@ -37,10 +38,15 @@ const Label = React.forwardRef<HTMLLabelElement, React.LabelHTMLAttributes<HTMLL
 );
 Label.displayName = "Label";
 
-const Select = ({ options, placeholder, icon: Icon, value, onChange }: any) => {
+const Select = ({ options, placeholder, value, onChange }: {
+    options: string[];
+    placeholder: string;
+    icon?: React.ComponentType<{ className?: string }>;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+}) => {
     return (
         <div className="relative group">
-            {Icon && <Icon className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground z-10" />}
             <select
                 value={value}
                 onChange={onChange}
@@ -60,7 +66,9 @@ const Select = ({ options, placeholder, icon: Icon, value, onChange }: any) => {
 
 export default function ProfilePage() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
     const [formData, setFormData] = useState({
         name: "",
         university: "",
@@ -68,16 +76,74 @@ export default function ProfilePage() {
         age: "",
     });
 
+    // Fetch existing profile data on mount
+    useEffect(() => {
+        async function fetchProfile() {
+            if (!user) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
+
+                if (error && error.code !== 'PGRST116') {
+                    console.error('Error fetching profile:', error);
+                }
+
+                if (data) {
+                    setFormData({
+                        name: data.name || '',
+                        university: data.university || '',
+                        stream: data.stream || '',
+                        age: '', // Age not stored in schema
+                    });
+                }
+            } finally {
+                setIsFetching(false);
+            }
+        }
+
+        fetchProfile();
+    }, [user]);
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) return;
+
         setIsLoading(true);
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        setIsLoading(false);
-        // Navigate to dashboard or next step (mock)
-        console.log("Profile Saved:", formData);
-        navigate("/dashboard");
+
+        try {
+            const { error } = await supabase
+                .from('users')
+                .upsert({
+                    id: user.id,
+                    email: user.email!,
+                    name: formData.name,
+                    university: formData.university || null,
+                    stream: formData.stream || null,
+                });
+
+            if (error) {
+                console.error('Error saving profile:', error);
+                return;
+            }
+
+            // Navigate to dashboard after saving
+            navigate("/dashboard");
+        } finally {
+            setIsLoading(false);
+        }
     };
+
+    if (isFetching) {
+        return (
+            <div className="w-full flex justify-center items-center min-h-[50vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+            </div>
+        );
+    }
 
     return (
         <div className="w-full flex justify-center p-4 transition-colors duration-300">
@@ -103,7 +169,15 @@ export default function ProfilePage() {
                         <div className="flex justify-start mb-8">
                             <div className="relative group cursor-pointer">
                                 <div className="w-24 h-24 rounded-full bg-secondary border-2 border-dashed border-border flex items-center justify-center overflow-hidden hover:border-primary transition-colors duration-300">
-                                    <User className="w-10 h-10 text-muted-foreground" />
+                                    {user?.user_metadata?.avatar_url ? (
+                                        <img
+                                            src={user.user_metadata.avatar_url}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <User className="w-10 h-10 text-muted-foreground" />
+                                    )}
                                 </div>
                                 <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-1.5 border-2 border-background">
                                     <Camera className="w-3 h-3 text-primary-foreground" />
@@ -131,7 +205,6 @@ export default function ProfilePage() {
                                 value={formData.university}
                                 onChange={(e) => setFormData({ ...formData, university: e.target.value })}
                                 className="bg-background border-input text-foreground placeholder:text-muted-foreground focus:border-ring"
-                                required
                             />
                         </div>
 
@@ -143,7 +216,7 @@ export default function ProfilePage() {
                                     placeholder="Select Stream"
                                     options={["Engineering", "Medical", "Arts", "Commerce", "Law", "Management", "Other"]}
                                     value={formData.stream}
-                                    onChange={(e: any) => setFormData({ ...formData, stream: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, stream: e.target.value })}
                                 />
                             </div>
 
@@ -172,9 +245,7 @@ export default function ProfilePage() {
                                 {isLoading ? (
                                     <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
                                 ) : (
-                                    <>
-                                        Save Changes
-                                    </>
+                                    <>Save Changes</>
                                 )}
                             </button>
                         </div>

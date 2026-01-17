@@ -1,0 +1,11 @@
+﻿src/components/ui/select.tsx(59,17): error TS2339: Property 'placeholder' does not exist on type 'HTMLAttributes<HTMLSpanElement>'.
+src/components/vault/UploadModal.tsx(76,50): error TS2322: Type '{ placeholder: string; }' is not assignable to type 'IntrinsicAttributes & HTMLAttributes<HTMLSpanElement> & RefAttributes<HTMLSpanElement>'.
+  Property 'placeholder' does not exist on type 'IntrinsicAttributes & HTMLAttributes<HTMLSpanElement> & RefAttributes<HTMLSpanElement>'.
+src/pages/LandingPage.tsx(9,5): error TS6133: 'useMotionTemplate' is declared but its value is never read.
+src/pages/LandingPage.tsx(10,5): error TS6133: 'AnimatePresence' is declared but its value is never read.
+src/pages/LandingPage.tsx(223,11): error TS6133: 'dispersionX' is declared but its value is never read.
+src/pages/LandingPage.tsx(224,11): error TS6133: 'dispersionY' is declared but its value is never read.
+src/pages/LandingPage.tsx(270,45): error TS6133: 'idx' is declared but its value is never read.
+src/pages/LandingPage.tsx(355,31): error TS6133: 'index' is declared but its value is never read.
+src/pages/TheVault.tsx(194,29): error TS2322: Type '{ key: string; name: string; href: string; cta: string; Icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; header: Element; background: "" | ... 1 more ... | undefined; description: Element; className: string; }' is not assignable to type 'IntrinsicAttributes & { name: string; className: string; background: ReactNode; Icon: any; description: ReactNode; href: string; cta: string; }'.
+  Property 'header' does not exist on type 'IntrinsicAttributes & { name: string; className: string; background: ReactNode; Icon: any; description: ReactNode; href: string; cta: string; }'.

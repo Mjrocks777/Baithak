@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Lock, Mail, User } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Lock, Mail, User, AlertCircle } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useAuth } from "@/context/AuthContext";
 
 // --- Mock UI Components ---
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => {
@@ -39,17 +40,57 @@ const GoogleIcon = () => (
 
 export default function AuthPage() {
     const [isSignIn, setIsSignIn] = useState(true);
-    const navigate = useNavigate();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [name, setName] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // For now, just navigate to dashboard on form submit
-    const handleSubmit = (e: React.FormEvent) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const { signIn, signUp, signInWithGoogle, user } = useAuth();
+
+    // Redirect if already logged in
+    React.useEffect(() => {
+        if (user) {
+            const from = (location.state as { from?: { pathname: string } })?.from?.pathname || '/dashboard';
+            navigate(from, { replace: true });
+        }
+    }, [user, navigate, location]);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        navigate('/dashboard');
+        setError(null);
+        setIsLoading(true);
+
+        try {
+            if (isSignIn) {
+                const { error } = await signIn(email, password);
+                if (error) {
+                    setError(error.message);
+                }
+            } else {
+                const { error } = await signUp(email, password, name);
+                if (error) {
+                    setError(error.message);
+                } else {
+                    // Show success message for sign up (email confirmation may be required)
+                    setError('Check your email to confirm your account!');
+                }
+            }
+        } catch {
+            setError('An unexpected error occurred');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
-    const handleGoogleLogin = () => {
-        // Placeholder: Navigate to dashboard for now
-        navigate('/dashboard');
+    const handleGoogleLogin = async () => {
+        setError(null);
+        const { error } = await signInWithGoogle();
+        if (error) {
+            setError(error.message);
+        }
     };
 
     return (
@@ -97,12 +138,24 @@ export default function AuthPage() {
                 {/* Card */}
                 <div className="bg-card/50 border border-border p-8 rounded-2xl shadow-xl backdrop-blur-sm">
 
+                    {/* Error/Success Message */}
+                    {error && (
+                        <div className={`flex items-center gap-2 p-3 rounded-lg mb-4 ${error.includes('Check your email')
+                                ? 'bg-green-500/10 text-green-500 border border-green-500/20'
+                                : 'bg-destructive/10 text-destructive border border-destructive/20'
+                            }`}>
+                            <AlertCircle size={16} />
+                            <span className="text-sm">{error}</span>
+                        </div>
+                    )}
+
                     {/* Social Login */}
                     <div className="space-y-4">
                         <Button
                             onClick={handleGoogleLogin}
                             variant="outline"
                             className="w-full py-6 bg-card border-input text-card-foreground hover:bg-accent hover:text-accent-foreground gap-3 rounded-xl transition-all"
+                            disabled={isLoading}
                         >
                             <GoogleIcon />
                             Continue with Google
@@ -125,8 +178,13 @@ export default function AuthPage() {
                             <div className="relative">
                                 <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                 <Input
+                                    type="email"
                                     placeholder="Enter your email address"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     className="pl-10 bg-background/50 border-input text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus:border-ring focus:bg-background transition-all"
+                                    required
+                                    disabled={isLoading}
                                 />
                             </div>
                         </div>
@@ -138,7 +196,12 @@ export default function AuthPage() {
                                 <Input
                                     type="password"
                                     placeholder="Enter your password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                     className="pl-10 bg-background/50 border-input text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus:border-ring focus:bg-background transition-all"
+                                    required
+                                    minLength={6}
+                                    disabled={isLoading}
                                 />
                             </div>
                         </div>
@@ -150,14 +213,25 @@ export default function AuthPage() {
                                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Enter your full name"
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
                                         className="pl-10 bg-background/50 border-input text-foreground placeholder:text-muted-foreground h-11 rounded-xl focus:border-ring focus:bg-background transition-all"
+                                        disabled={isLoading}
                                     />
                                 </div>
                             </div>
                         )}
 
-                        <Button type="submit" className="w-full h-11 rounded-xl font-semibold transition-all mt-4">
-                            Continue
+                        <Button
+                            type="submit"
+                            className="w-full h-11 rounded-xl font-semibold transition-all mt-4"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                            ) : (
+                                'Continue'
+                            )}
                         </Button>
                     </form>
                 </div>
@@ -165,7 +239,10 @@ export default function AuthPage() {
                 <p className="text-center text-sm text-muted-foreground">
                     {isSignIn ? "Don't have an account? " : "Already have an account? "}
                     <button
-                        onClick={() => setIsSignIn(!isSignIn)}
+                        onClick={() => {
+                            setIsSignIn(!isSignIn);
+                            setError(null);
+                        }}
                         className="font-medium text-foreground hover:underline underline-offset-4"
                     >
                         {isSignIn ? "Sign up" : "Sign in"}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import SearchBar from '../components/vault/SearchBar';
 import UploadModal from '../components/vault/UploadModal';
 import { Button } from '@/components/ui/button';

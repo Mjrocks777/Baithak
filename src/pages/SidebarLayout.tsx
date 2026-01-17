@@ -1,13 +1,21 @@
 
 import { useState } from "react";
 import { Sidebar, SidebarBody, SidebarLink } from "@/components/ui/sidebar";
-import { ModeToggle } from "@/components/mode-toggle";
 import { LayoutDashboard, UserCog, Settings, LogOut, FolderOpen } from "lucide-react";
-import { Link, Outlet } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
 
 export function SidebarLayout() {
     console.log("Rendering SidebarLayout");
+    const { user, signOut } = useAuth();
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await signOut();
+        navigate('/auth');
+    };
+
     const links = [
         {
             label: "Dashboard",
@@ -37,15 +45,23 @@ export function SidebarLayout() {
                 <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
             ),
         },
-        {
-            label: "Logout",
-            href: "/auth",
-            icon: (
-                <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
-            ),
-        },
     ];
     const [open, setOpen] = useState(false);
+
+    // Get user initials for avatar
+    const getUserInitials = () => {
+        const name = user?.user_metadata?.full_name || user?.email || 'U';
+        const parts = name.split(' ');
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[1][0]).toUpperCase();
+        }
+        return name.slice(0, 2).toUpperCase();
+    };
+
+    const getUserDisplayName = () => {
+        return user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+    };
+
     return (
         <div
             className={cn(
@@ -61,16 +77,29 @@ export function SidebarLayout() {
                             {links.map((link, idx) => (
                                 <SidebarLink key={idx} link={link} />
                             ))}
+                            {/* Logout button (uses onClick instead of href) */}
+                            <button
+                                onClick={handleLogout}
+                                className="flex items-center justify-start gap-2 group/sidebar py-2 px-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                            >
+                                <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                                <span className={cn(
+                                    "text-neutral-700 dark:text-neutral-200 text-sm whitespace-pre transition-opacity duration-150",
+                                    !open && "opacity-0 hidden"
+                                )}>
+                                    Logout
+                                </span>
+                            </button>
                         </div>
                     </div>
                     <div>
                         <SidebarLink
                             link={{
-                                label: "Arjun Sharma",
+                                label: getUserDisplayName(),
                                 href: "/profile",
                                 icon: (
                                     <div className="h-7 w-7 flex-shrink-0 rounded-full bg-neutral-300 dark:bg-neutral-600 flex items-center justify-center text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                                        AS
+                                        {getUserInitials()}
                                     </div>
                                 ),
                             }}
@@ -90,6 +119,7 @@ export function SidebarLayout() {
         </div >
     );
 }
+
 
 export const Logo = () => {
     return (

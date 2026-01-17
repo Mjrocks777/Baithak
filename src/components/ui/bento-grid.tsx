@@ -31,14 +31,16 @@ const BentoCard = ({
     description,
     href,
     cta,
+    header,
 }: {
     name: string;
     className: string;
     background: ReactNode;
     Icon: any;
-    description: string;
+    description: ReactNode;
     href: string;
     cta: string;
+    header?: ReactNode;
 }) => (
     <div
         key={name}

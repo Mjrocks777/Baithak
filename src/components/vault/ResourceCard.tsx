@@ -1,4 +1,3 @@
-import React from 'react';
 import { FileText, Image as ImageIcon, Link as LinkIcon, Lock, Globe, ThumbsUp, Trash2, ExternalLink } from 'lucide-react';
 import type { Resource } from '@/pages/TheVault';
 import { Button } from '@/components/ui/button';
