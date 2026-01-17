@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Lock, Mail, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ModeToggle } from "@/components/mode-toggle"; // Uncomment if you have this component
-import { useSignIn } from "@clerk/clerk-react"; // <--- IMPORT CLERK HOOK
+import { ModeToggle } from "@/components/mode-toggle";
 
 // --- Mock UI Components ---
 const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(({ className, ...props }, ref) => {
@@ -42,22 +41,16 @@ export default function AuthPage() {
     const [isSignIn, setIsSignIn] = useState(true);
     const navigate = useNavigate();
 
-    // --- CLERK INTEGRATION START ---
-    const { signIn, isLoaded } = useSignIn();
-
-    const handleGoogleLogin = async () => {
-        if (!isLoaded) return;
-        try {
-            await signIn.authenticateWithRedirect({
-                strategy: "oauth_google",
-                redirectUrl: "/dashboard",
-                redirectUrlComplete: "/dashboard",
-            });
-        } catch (err) {
-            console.error("Login failed", err);
-        }
+    // For now, just navigate to dashboard on form submit
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        navigate('/dashboard');
     };
-    // --- CLERK INTEGRATION END ---
+
+    const handleGoogleLogin = () => {
+        // Placeholder: Navigate to dashboard for now
+        navigate('/dashboard');
+    };
 
     return (
         <div className="min-h-screen w-full bg-background text-foreground flex flex-col items-center justify-center p-4 transition-colors duration-300">
@@ -75,7 +68,6 @@ export default function AuthPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="w-full max-w-md space-y-8"
             >
-                {/* Logo */}
                 {/* Logo */}
                 <div className="flex justify-center mb-8">
                     {/* Light Mode Logo */}
@@ -105,10 +97,10 @@ export default function AuthPage() {
                 {/* Card */}
                 <div className="bg-card/50 border border-border p-8 rounded-2xl shadow-xl backdrop-blur-sm">
 
-                    {/* Social Login - NOW FUNCTIONAL */}
+                    {/* Social Login */}
                     <div className="space-y-4">
                         <Button
-                            onClick={handleGoogleLogin} // <--- Added Handler
+                            onClick={handleGoogleLogin}
                             variant="outline"
                             className="w-full py-6 bg-card border-input text-card-foreground hover:bg-accent hover:text-accent-foreground gap-3 rounded-xl transition-all"
                         >
@@ -126,11 +118,8 @@ export default function AuthPage() {
                         </div>
                     </div>
 
-                    {/* Form (Visual Only for now) */}
-                    <form className="space-y-4" onSubmit={(e) => {
-                        e.preventDefault();
-                        // Optional: Add email logic later if needed
-                    }}>
+                    {/* Form */}
+                    <form className="space-y-4" onSubmit={handleSubmit}>
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-foreground ml-1">Email address</label>
                             <div className="relative">
@@ -167,8 +156,8 @@ export default function AuthPage() {
                             </div>
                         )}
 
-                        <Button className="w-full h-11 rounded-xl font-semibold transition-all mt-4">
-                            Continue (Use Google Above)
+                        <Button type="submit" className="w-full h-11 rounded-xl font-semibold transition-all mt-4">
+                            Continue
                         </Button>
                     </form>
                 </div>
@@ -185,7 +174,7 @@ export default function AuthPage() {
 
                 <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm">
                     <Lock size={12} />
-                    <span>Secured by Clerk</span>
+                    <span>Secured connection</span>
                 </div>
 
             </motion.div>
